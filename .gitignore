@@ -1,0 +1,24 @@
+# Python cache / compiled files
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Virtual environment
+venv/
+.env/
+
+# Jupyter notebook checkpoints
+.ipynb_checkpoints/
+
+# Model files
+
+
+# Data files (optional: keep raw/processed data out of git if large)
+
+
+# OS files
+.DS_Store
+Thumbs.db
+
+#txt files

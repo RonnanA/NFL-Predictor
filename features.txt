@@ -1,0 +1,4 @@
+season | week | home_team | away_team | home_ppg | away_ppg | hone_pts_allowed | away_pts_allowed | home_yds | away_yds | home_yds_allowed | away_yds_allowed | home_win
+
+X = features
+y = home team win
