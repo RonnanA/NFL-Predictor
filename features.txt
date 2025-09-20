@@ -1,4 +1,17 @@
-season | week | home_team | away_team | home_ppg | away_ppg | hone_pts_allowed | away_pts_allowed | home_yds | away_yds | home_yds_allowed | away_yds_allowed | home_win
+X feature matrix metrics:
+-- points_scored_diff (teamA_ppg - teamB_ppg)
+-- points_allowed_diff
+-- yards_gained_diff
+-- yards_allowed_diff
+-- turnover_diff
+-- recent_form_diff (avg points last 3 games)
+-- home_team (if teamA is at home)
+##-- elo_diff (if you calculate Elo or use a proxy like power ranking)## future feature
 
 X = features
 y = home team win
+
+model = logistic regression
+
+
+workflow -- collect data -> merge data* -> process data -> build X (features) and y (win/loss) -> train/test model -> weekly data updates/re-train

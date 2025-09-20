@@ -12,13 +12,15 @@ venv/
 .ipynb_checkpoints/
 
 # Model files
-
+models/
 
 # Data files (optional: keep raw/processed data out of git if large)
-
+data/raw/
+data/processed/
 
 # OS files
 .DS_Store
 Thumbs.db
 
 #txt files
+features.txt
