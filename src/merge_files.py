@@ -17,12 +17,16 @@ SEASON_2020 = "Season-2020.csv"
 STATS_2020 = "Stats-2020.csv"
 MERGED_FILE_NAME_2020 = "Merged-Season-2020.csv"
 
+
+#def merge(season_year: int, stats_year: int):
+
+
 # reverse dataframe
 def reverse(season_df):
     reversed_season_df = season_df.iloc[::-1].reset_index(drop=True)
     return reversed_season_df
 
-def merge(season_file, stats_file):
+def merge_old(season_file, stats_file):
 
     # change dir and create dfs
     os.chdir(r"G:\Projects\NFL-Predictor\data\raw")
@@ -75,5 +79,5 @@ def merge(season_file, stats_file):
 
     
 
-merge(SEASON_2020, STATS_2020)
+#merge_old(SEASON_2020, STATS_2020)
 

@@ -5,8 +5,31 @@ import pandas as pd
 import time
 import os
 import random
+from datetime import datetime
 
-def scrape_season(season: int) -> pd.DataFrame:
+def scrape_season(season: int):
+    output_path = rf"G:\Projects\NFL-Predictor\data\raw\Season-{season}.csv"
+    if not os.path.exists(output_path):
+        df = scrape_season_helper(season)
+        return df
+    
+    df = pd.read_csv(output_path)
+    try:
+        first_empty_row = df[df.isnull().any(axis=1)].iloc[0]
+        first_empty_row['event_date'] = pd.to_datetime(first_empty_row['event_date'], errors='coerce')
+
+        latest_game = first_empty_row['event_date']
+        today = datetime.today()
+
+        if latest_game.date() <= today.date():
+            updated_df = scrape_season_helper(season)
+            return updated_df
+            
+    except:
+        print(f"-- SEASON {season} FILE IS UP-TO-DATE --")    
+        return None
+
+def scrape_season_helper(season: int) -> pd.DataFrame:
     url = f"https://www.pro-football-reference.com/years/{season}/games.htm"
 
     try:
@@ -40,12 +63,12 @@ def scrape_season(season: int) -> pd.DataFrame:
         print(f"ERROR -- FAILED TO PARSE HTML FOR {season}: {e} --")
         return pd.DataFrame()
     
-    print("----------------------------\n" \
-          " Web scrape successful twin\n" \
-          "----------------------------")
+    print("-----------------------------------\n" \
+          " season web scrape successful twin\n" \
+          "-----------------------------------")
     return df
 
-def scrape_stats(urls, alias_list, season):
+def scrape_stats(urls: list[str], alias_list: list[tuple[str, str]], season: int) -> pd.DataFrame:
     output_path = rf"G:\Projects\NFL-Predictor\data\raw\Stats-{season}.csv"
     min_delay = 3
     max_delay = 7
@@ -75,12 +98,14 @@ def scrape_stats(urls, alias_list, season):
         print(f"-- SLEEPING {delay:.1f}s... --")
         time.sleep(delay)
 
-    print("-- SCRAPING STATS COMPLETE --")
+    print("----------------------------------\n" \
+          " stats web scrape successful twin\n" \
+          "----------------------------------")
     return final_df
 
 
 
-def scrape_stats_helper(url, season_tm, season_opp):
+def scrape_stats_helper(url: str, season_tm: str, season_opp: str) -> pd.DataFrame:
     try:
         with sync_playwright() as p:
             browser = p.chromium.launch(headless=True)
@@ -105,7 +130,7 @@ def scrape_stats_helper(url, season_tm, season_opp):
         return None
 
 
-def flatten_game_stats(df: pd.DataFrame, season_tm_alias, season_opp_alias):
+def flatten_game_stats(df: pd.DataFrame, season_tm_alias: str, season_opp_alias: str) -> pd.DataFrame:
     
     stats_tm_alias = get_alias_from_tc(df.columns[1])
     stats_opp_alias = get_alias_from_tc(df.columns[2])
@@ -152,7 +177,7 @@ def flatten_game_stats(df: pd.DataFrame, season_tm_alias, season_opp_alias):
     return(pd.DataFrame([flat_data]))
 
 
-def build_boxscore_urls(season: int):
+def build_boxscore_urls(season: int) -> tuple[list[str], list[tuple[str, str]]]:
     df = pd.read_csv(rf"G:\Projects\NFL-Predictor\data\raw\Season-{season}.csv")
 
     urls = []
