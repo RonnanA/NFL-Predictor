@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 from teams import get_pfr_code, get_alias_from_tc
 import pandas as pd
 import time
+import os
 
 def scrape_season(season: int) -> pd.DataFrame:
     url = f"https://www.pro-football-reference.com/years/{season}/games.htm"
@@ -16,26 +17,26 @@ def scrape_season(season: int) -> pd.DataFrame:
                 page.goto(url, timeout=60000)
                 html = page.content()
             except Exception as e:
-                print(f"ERROR: Failed to load page for {season} with exception {e}")
+                print(f"ERROR -- FAILED TO LOAD PAGE FOR {season}: {e} --")
                 return pd.DataFrame()
             
             finally:
                 browser.close()
 
     except Exception as e:
-        print(f"ERROR: Playwright launch failed with exception {e}")
+        print(f"ERROR -- PLAYWRIGHT LAUNCH FAILED WITH EXCEPTION: {e} --")
         return pd.DataFrame()
 
     try:
         soup = BeautifulSoup(html, "html.parser")
         table = soup.find("table", id="games")
         if table is None:
-            print(f"ERROR: Could not find table for {season} with exception {e}")
+            print(f"ERROR -- COULD NOT FIND TABLE FOR {season}: {e} --")
             return pd.DataFrame()
         
         df = pd.read_html(str(table), header=None)[0]
     except Exception as e:
-        print(f"ERROR: Failed to parse HTML for {season} with exception {e}")
+        print(f"ERROR -- FAILED TO PARSE HTML FOR {season}: {e} --")
         return pd.DataFrame()
     
     print("----------------------------\n" \
@@ -43,21 +44,25 @@ def scrape_season(season: int) -> pd.DataFrame:
           "----------------------------")
     return df
 
+#def scrape_stats(urls, alias_list, season):
 
-def scrape_stats(url):
 
-    with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True)
-        page = browser.new_page()
-        page.goto(url, timeout=60000)
-        html = page.content()
-        browser.close()
+def scrape_stats_helper(url, season_tm, season_opp):
+    try:
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=True)
+            page = browser.new_page()
+            page.goto(url, timeout=60000)
+            html = page.content()
+            browser.close()
 
-        soup = BeautifulSoup(html, "html.parser")
-        table = soup.find("table", id="team_stats")
-        df = pd.read_html(str(table), header=None)[0]
-        
-        return df
+            soup = BeautifulSoup(html, "html.parser")
+            table = soup.find("table", id="team_stats")
+            df = pd.read_html(str(table), header=None)[0]
+            
+            return df
+    except Exception as e:
+        print(f"ERROR -- FAILED TO SCRAPE {url}: {e}")
 
 
 def flatten_game_stats(df: pd.DataFrame, season_tm_alias, season_opp_alias):
@@ -65,7 +70,7 @@ def flatten_game_stats(df: pd.DataFrame, season_tm_alias, season_opp_alias):
     stats_tm_alias = get_alias_from_tc(df.columns[1])
     stats_opp_alias = get_alias_from_tc(df.columns[2])
 
-    if stats_tm_alias == season_tm_alias:
+    if stats_tm_alias == season_tm_alias and stats_opp_alias == season_opp_alias:
         tm_col = stats_tm_alias
         opp_col = stats_opp_alias
         df.columns = ['stat', tm_col, opp_col]
@@ -109,17 +114,14 @@ def build_boxscore_urls(season: int):
     df = pd.read_csv(rf"G:\Projects\NFL-Predictor\data\raw\Season-{season}.csv")
 
     urls = []
+    alias_list = []
     for row in df.itertuples(index=False):
         date_str = row.event_date.replace("-", "")
         home_alias = row.tm_alias if row.tm_location == "H" else row.opp_alias
         home_code = get_pfr_code(home_alias)
+        alias_list.append((row.tm_alias, row.opp_alias))
 
         url = f"https://www.pro-football-reference.com/boxscores/{date_str}0{home_code}.htm"
         urls.append(url)
 
-    return urls
-
-
-df = scrape_stats("https://www.pro-football-reference.com/boxscores/202009130jax.htm")
-flat = flatten_game_stats(df, "JAC", "IND")
-#flat.to_csv(rf"G:\Projects\NFL-Predictor\data\raw\testres.csv", index=False)
+    return urls, alias_list
