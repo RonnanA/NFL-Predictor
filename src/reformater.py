@@ -1,49 +1,11 @@
 import pandas as pd
-import os
+from teams import get_alias
 
 PASTE_SEASON_2024 = "CSV-Paste-Season-2024.csv"
 FORMATTED_SEASON_2024 = "Season-2024.csv"
 
 PASTE_STATS_2024 = "CSV-Paste-Stats-2024.csv"
 FORMATTED_STATS_2024 = "Stats-2024.csv"
-
-TEAM_ALIASES = {
-    "Arizona Cardinals": "ARI",
-    "Atlanta Falcons": "ATL",
-    "Baltimore Ravens": "BAL",
-    "Buffalo Bills": "BUF",
-    "Carolina Panthers": "CAR",
-    "Chicago Bears": "CHI",
-    "Cincinnati Bengals": "CIN",
-    "Cleveland Browns": "CLE",
-    "Dallas Cowboys": "DAL",
-    "Denver Broncos": "DEN",
-    "Detroit Lions": "DET",
-    "Green Bay Packers": "GB",
-    "Houston Texans": "HOU",
-    "Indianapolis Colts": "IND",
-    "Jacksonville Jaguars": "JAC",
-    "Kansas City Chiefs": "KC",
-    "Las Vegas Raiders": "LV",
-    "Los Angeles Chargers": "LAC",
-    "Los Angeles Rams": "LAR",
-    "Miami Dolphins": "MIA",
-    "Minnesota Vikings": "MIN",
-    "New England Patriots": "NE",
-    "New Orleans Saints": "NO",
-    "New York Giants": "NYG",
-    "New York Jets": "NYJ",
-    "Philadelphia Eagles": "PHI",
-    "Pittsburgh Steelers": "PIT",
-    "San Francisco 49ers": "SF",
-    "Seattle Seahawks": "SEA",
-    "Tampa Bay Buccaneers": "TB",
-    "Tennessee Titans": "TEN",
-    "Washington Commanders": "WAS"
-}
-
-def get_alias(team_name: str) -> str:
-    return TEAM_ALIASES.get(team_name, "UNK")
 
 
 # reformat PFR csv paste to standard csv
@@ -71,3 +33,6 @@ def reformat_season(df: pd.DataFrame, file_name: str):
           f" Data was reformatted twin. Path: 'G:\\Projects\\NFL-Predictor\\data\\raw\\{file_name}'\n" \
           "---------------------------------------------------------------------------------------")
     df.to_csv(rf"G:\Projects\NFL-Predictor\data\raw\{file_name}", index=False)
+
+
+#def reformat_stats(df: pd.DataFrame(), file_name: str):

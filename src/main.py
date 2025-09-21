@@ -1,4 +1,4 @@
-from scrapper import scrape_season
+from src.scraper import scrape_season
 from reformater import reformat_season
 import pandas as pd
 

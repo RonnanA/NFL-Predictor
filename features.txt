@@ -15,3 +15,25 @@ model = logistic regression
 
 
 workflow -- collect data -> merge data* -> process data -> build X (features) and y (win/loss) -> train/test model -> weekly data updates/re-train
+
+overview
+- train model on historic data (5 years)
+- re-train model weekly with up to date data
+
+flow
+give model matchup -> makes sure data is up to date and model is trained on said data -> model makes predictions
+
+files TODO
+scraper
+- scrape_season: DONE
+- scrape_stats: get all games urls based on season data, scrape each page (game), call flatten_game_stats to get a single line data frame, append data frame to main data frame, return 
+stats data frame. implement checks so it doesnt scrape information already there when scraping every week. implement loading bar
+
+reformater
+- reformats season file and stats file
+
+merge_files
+- merges season and stats file into one
+
+data_prep
+- calls the necessary functions and makes sure data is up to date
