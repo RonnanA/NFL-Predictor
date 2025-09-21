@@ -1,9 +1,8 @@
-from src.scraper import scrape_season
+from scraper import scrape_season, scrape_stats, build_boxscore_urls
 from reformater import reformat_season
 import pandas as pd
 
-
-file_name = "Season-2020.csv"
-df = scrape_season(2020)
-reformat_season(df, file_name)
+season = 2020
+urls, alias_list = build_boxscore_urls(season)
+df = scrape_stats(urls, alias_list, season)
 

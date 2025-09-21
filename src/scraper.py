@@ -4,6 +4,7 @@ from teams import get_pfr_code, get_alias_from_tc
 import pandas as pd
 import time
 import os
+import random
 
 def scrape_season(season: int) -> pd.DataFrame:
     url = f"https://www.pro-football-reference.com/years/{season}/games.htm"
@@ -44,7 +45,39 @@ def scrape_season(season: int) -> pd.DataFrame:
           "----------------------------")
     return df
 
-#def scrape_stats(urls, alias_list, season):
+def scrape_stats(urls, alias_list, season):
+    output_path = rf"G:\Projects\NFL-Predictor\data\raw\Stats-{season}.csv"
+    min_delay = 3
+    max_delay = 7
+
+    if os.path.exists(output_path):
+        final_df = pd.read_csv(output_path)
+        already_done = set(final_df["url"].to_list())
+        print(f"-- FOUND {len(already_done)} GAMES ALREADY SCRAPED --")
+    else:
+        final_df = pd.DataFrame()
+        already_done = set()
+
+    for url, alias_tuple in zip(urls, alias_list):
+        if url in already_done:
+            print(f"-- SKIPPING {url} (ALREADY SCRAPED) --")
+            continue
+
+        flat_df = scrape_stats_helper(url, alias_tuple[0], alias_tuple[1])
+        if flat_df is not None:
+            final_df = pd.concat([final_df, flat_df], ignore_index=True)
+            final_df.to_csv(output_path, index=False)
+            print(f"-- SCRAPED {url} --")
+        else:
+            print(f"-- SKIPPED {url} (FAILED) --")
+        
+        delay = random.uniform(min_delay, max_delay)
+        print(f"-- SLEEPING {delay:.1f}s... --")
+        time.sleep(delay)
+
+    print("-- SCRAPING STATS COMPLETE --")
+    return final_df
+
 
 
 def scrape_stats_helper(url, season_tm, season_opp):
@@ -58,11 +91,18 @@ def scrape_stats_helper(url, season_tm, season_opp):
 
             soup = BeautifulSoup(html, "html.parser")
             table = soup.find("table", id="team_stats")
-            df = pd.read_html(str(table), header=None)[0]
+            if table is None:
+                print(f"ERROR -- NO STATS TABLE SOUND AT {url} --")
+                return None
             
-            return df
+            df = pd.read_html(str(table), header=None)[0]
+            flat_df = flatten_game_stats(df, season_tm, season_opp)
+            flat_df["url"] = url
+            return flat_df
+        
     except Exception as e:
-        print(f"ERROR -- FAILED TO SCRAPE {url}: {e}")
+        print(f"ERROR -- FAILED TO SCRAPE {url}: {e} --")
+        return None
 
 
 def flatten_game_stats(df: pd.DataFrame, season_tm_alias, season_opp_alias):
@@ -107,6 +147,8 @@ def flatten_game_stats(df: pd.DataFrame, season_tm_alias, season_opp_alias):
             flat_data[f"tm_{stat_name.lower().replace(' ', '_')}"] = tm_value
             flat_data[f"opp_{stat_name.lower().replace(' ', '_')}"] = opp_value
 
+    flat_data["tm_alias"] = season_tm_alias
+    flat_data["opp_alias"] = season_opp_alias
     return(pd.DataFrame([flat_data]))
 
 
