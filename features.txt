@@ -13,27 +13,34 @@ y = home team win
 
 model = logistic regression
 
+merged file metrics:
+tm_first_downs,         opp_first_downs,
+tm_rush_att,            opp_rush_att,
+tm_rush_yds,            opp_rush_yds,
+tm_rush_tds,            opp_rush_tds,
+tm_pass_cmp,            opp_pass_cmp,
+tm_pass_att,            opp_pass_att,
+tm_pass_yds,            opp_pass_yds,
+tm_pass_tds,            opp_pass_tds,
+tm_pass_int,            opp_pass_int,
+tm_sacks,               opp_sacks,
+tm_sack_yds,            opp_sack_yds,
+tm_net_pass_yards,      opp_net_pass_yards,
+tm_total_yards,         opp_total_yards,
+tm_fmbl,                opp_fmbl,
+tm_fmbl_yds,            opp_fmbl_yds,
+tm_turnovers,           opp_turnovers,
+tm_pen,                 opp_pen,
+tm_pen_yds,             opp_pen_yds,
+tm_third_d,             opp_third_d,
+tm_thrid_d_conv,        opp_thrid_d_conv,
+tm_fourth_d,            opp_fourth_d,
+tm_fourth_d_conv,       opp_fourth_d_conv,
+tm_time_of_possession,  opp_time_of_possession,
+tm_alias,               opp_alias
 
-workflow -- collect data -> merge data* -> process data -> build X (features) and y (win/loss) -> train/test model -> weekly data updates/re-train
+workflow -- scrape data -> merge data -> process data -> build X (features) and y (win/loss) -> train/test model -> weekly data updates/re-train (script)
 
-overview
-- train model on historic data (5 years)
-- re-train model weekly with up to date data
 
-flow
-give model matchup -> makes sure data is up to date and model is trained on said data -> model makes predictions
+THINGS TO FIX:
 
-files TODO
-scraper
-- scrape_season: DONE
-- scrape_stats: get all games urls based on season data, scrape each page (game), call flatten_game_stats to get a single line data frame, append data frame to main data frame, return 
-stats data frame. implement checks so it doesnt scrape information already there when scraping every week. implement loading bar
-
-reformater
-- reformats season file and stats file
-
-merge_files
-- merges season and stats file into one
-
-data_prep
-- calls the necessary functions and makes sure data is up to date

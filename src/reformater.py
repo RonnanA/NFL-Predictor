@@ -1,12 +1,6 @@
 import pandas as pd
 from teams import get_alias
 
-PASTE_SEASON_2024 = "CSV-Paste-Season-2024.csv"
-FORMATTED_SEASON_2024 = "Season-2024.csv"
-
-PASTE_STATS_2024 = "CSV-Paste-Stats-2024.csv"
-FORMATTED_STATS_2024 = "Stats-2024.csv"
-
 
 def reformat_season(df: pd.DataFrame, season: int):
     if df is not None:  
@@ -29,8 +23,9 @@ def reformat_season(df: pd.DataFrame, season: int):
         df = df.drop(df.columns[8:12], axis=1)
         df = df.reset_index(drop=True)
 
-        print("---------------------------------------------------------------------------------------\n" \
-            f" Data was reformatted twin. Path: 'G:\\Projects\\NFL-Predictor\\data\\raw\\Season-{season}.csv'\n" \
-            "---------------------------------------------------------------------------------------")
         df.to_csv(rf"G:\Projects\NFL-Predictor\data\raw\Season-{season}.csv", index=False)
+
+        print("\033[32m---------------------------------------------------------------------------------------\n" \
+            f" Data was reformatted twin. Path: 'G:\\Projects\\NFL-Predictor\\data\\raw\\Season-{season}.csv'\n" \
+            "---------------------------------------------------------------------------------------\033[0m")
 

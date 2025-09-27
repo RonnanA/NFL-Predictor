@@ -1,9 +1,4 @@
-from scraper import scrape_season, scrape_stats, build_boxscore_urls
-from reformater import reformat_season
-import pandas as pd
+from update_data import update_data_script
 
-
-season = 2020
-df = scrape_season(season)
-reformat_season(df, season)
-#print(df.head())
+year = 2021
+update_data_script(year)

@@ -15,8 +15,7 @@ venv/
 models/
 
 # Data files (optional: keep raw/processed data out of git if large)
-data/raw/
-data/processed/
+data/
 
 # OS files
 .DS_Store
@@ -24,3 +23,6 @@ Thumbs.db
 
 #txt files
 features.txt
+
+#test files
+src/test.py
