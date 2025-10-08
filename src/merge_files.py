@@ -5,7 +5,7 @@ def merge(year: int):
     season_df = pd.read_csv(rf"G:\Projects\NFL-Predictor\data\raw\Season-{year}.csv")
     stats_df = pd.read_csv(rf"G:\Projects\NFL-Predictor\data\raw\Stats-{year}.csv")
 
-    stats_df = stats_df.drop(columns=["tm_alias", "opp_alias"])
+    stats_df = stats_df.drop(columns=["home_alias", "away_alias"])
 
     final_df = pd.concat([season_df, stats_df], axis=1)
 

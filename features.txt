@@ -4,7 +4,7 @@ X feature matrix metrics:
 -- yards_gained_diff
 -- yards_allowed_diff
 -- turnover_diff
--- recent_form_diff (avg points last 3 games)
+-- recent_form_diff
 -- home_team (if teamA is at home)
 ##-- elo_diff (if you calculate Elo or use a proxy like power ranking)## future feature
 
@@ -14,33 +14,40 @@ y = home team win
 model = logistic regression
 
 merged file metrics:
-tm_first_downs,         opp_first_downs,
-tm_rush_att,            opp_rush_att,
-tm_rush_yds,            opp_rush_yds,
-tm_rush_tds,            opp_rush_tds,
-tm_pass_cmp,            opp_pass_cmp,
-tm_pass_att,            opp_pass_att,
-tm_pass_yds,            opp_pass_yds,
-tm_pass_tds,            opp_pass_tds,
-tm_pass_int,            opp_pass_int,
-tm_sacks,               opp_sacks,
-tm_sack_yds,            opp_sack_yds,
-tm_net_pass_yards,      opp_net_pass_yards,
-tm_total_yards,         opp_total_yards,
-tm_fmbl,                opp_fmbl,
-tm_fmbl_yds,            opp_fmbl_yds,
-tm_turnovers,           opp_turnovers,
-tm_pen,                 opp_pen,
-tm_pen_yds,             opp_pen_yds,
-tm_third_d,             opp_third_d,
-tm_thrid_d_conv,        opp_thrid_d_conv,
-tm_fourth_d,            opp_fourth_d,
-tm_fourth_d_conv,       opp_fourth_d_conv,
-tm_time_of_possession,  opp_time_of_possession,
-tm_alias,               opp_alias
+home_first_downs,         away_first_downs,
+home_rush_att,            away_rush_att,
+home_rush_yds,            away_rush_yds,
+home_rush_tds,            away_rush_tds,
+home_pass_cmp,            away_pass_cmp,
+home_pass_att,            away_pass_att,
+home_pass_yds,            away_pass_yds,
+home_pass_tds,            away_pass_tds,
+home_pass_int,            away_pass_int,
+home_sacks,               away_sacks,
+home_sack_yds,            away_sack_yds,
+home_net_pass_yards,      away_net_pass_yards,
+home_total_yards,         away_total_yards,
+home_fmbl,                away_fmbl,
+home_fmbl_yds,            away_fmbl_yds,
+home_turnovers,           away_turnovers,
+home_pen,                 away_pen,
+home_pen_yds,             away_pen_yds,
+home_third_d,             away_third_d,
+home_thrid_d_conv,        away_thrid_d_conv,
+home_fourth_d,            away_fourth_d,
+home_fourth_d_conv,       away_fourth_d_conv,
+home_time_of_possession,  away_time_of_possession,
+home_alias,               away_alias
 
 workflow -- scrape data -> merge data -> process data -> build X (features) and y (win/loss) -> train/test model -> weekly data updates/re-train (script)
 
 
 THINGS TO FIX:
+(change perspective to home/away team)
+- rework reformatter            --done
+- rework flatten in scraper     --done
+- rework merge file             --done
+- add progress bar              --done
+- implement graceful exit on    --
+stats scrape
 
