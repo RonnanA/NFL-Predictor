@@ -1,5 +1,4 @@
 import time
-import enlighten
 from rich.progress import Progress
 
 with Progress(transient=True) as progress:
