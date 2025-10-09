@@ -49,6 +49,6 @@ THINGS TO FIX:
 - rework merge file             --done
 - add progress bar              --done
 - change filepath system        --done
-- implement graceful exit on    --
+- implement graceful exit on    --done
 stats scrape
 
