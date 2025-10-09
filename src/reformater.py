@@ -1,8 +1,11 @@
 import pandas as pd
 from teams import get_alias
+from config import RAW_DIR
 
 
 def reformat_season(df: pd.DataFrame, year: int):
+    output_path = RAW_DIR / f"Season-{year}.csv"
+
     if df is not None:  
         df = df.dropna(subset=["Week"])
         df = df[df["Week"] != "Week"]
@@ -40,8 +43,8 @@ def reformat_season(df: pd.DataFrame, year: int):
 
         df = df.reset_index(drop=True)
 
-        df.to_csv(rf"G:\Projects\NFL-Predictor\data\raw\Season-{year}.csv", index=False)
+        df.to_csv(output_path, index=False)
 
-        print("\033[32m---------------------------------------------------------------------------------------\n" \
-            f" Data was reformatted twin. Path: 'G:\\Projects\\NFL-Predictor\\data\\raw\\Season-{year}.csv'\n" \
-            "---------------------------------------------------------------------------------------\033[0m")
+        print("\033[32m-------------------------------------------------------------------------------------\n" \
+            f" Data was reformatted twin. Path: {output_path}\n" \
+            "-------------------------------------------------------------------------------------\033[0m")

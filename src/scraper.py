@@ -3,6 +3,7 @@ from teams import get_pfr_code, get_alias_from_tc
 from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn
 from bs4 import BeautifulSoup
 from datetime import datetime
+from config import RAW_DIR
 from io import StringIO
 import pandas as pd
 import time
@@ -13,7 +14,7 @@ import random
 
 
 def scrape_season(year: int) -> pd.DataFrame:
-    output_path = rf"G:\Projects\NFL-Predictor\data\raw\Season-{year}.csv"
+    output_path = RAW_DIR / f"Season-{year}.csv"
     if not os.path.exists(output_path):
         df = scrape_season_helper(year)
         return df
@@ -76,21 +77,12 @@ def scrape_season_helper(year: int) -> pd.DataFrame:
 
 
 def scrape_stats(year: int):
-    kill_now = False
-    def handle_exit(sig, frame):
-        nonlocal kill_now
-        print("in handle exit func")
-        kill_now = True
-
-    signal.signal(signal.SIGINT, handle_exit)
-    signal.signal(signal.SIGTERM, handle_exit)
-
     urls, alias_list = build_boxscore_urls(year)
     if len(urls) == 0:
         print("\033[31mERROR -- NO URLS GIVEN TO SCRAPE --\033[0m")
         return
     
-    output_path = rf"G:\Projects\NFL-Predictor\data\raw\Stats-{year}.csv"
+    output_path = RAW_DIR / f"Stats-{year}.csv"
     min_delay = 3
     max_delay = 7
 
@@ -127,10 +119,6 @@ def scrape_stats(year: int):
 
             progress.update(task, advance=1)
             
-            if kill_now:
-                print("in kill not cond")
-                sys.exit(0)
-
             delay = random.uniform(min_delay, max_delay)
             print(f"\033[33m-- SLEEPING {delay:.1f}s... --\033[0m")
             time.sleep(delay)
@@ -215,13 +203,15 @@ def flatten_game_stats(df: pd.DataFrame, season_home_team: str, season_away_team
 
 
 def build_boxscore_urls(year: int) -> tuple[list[str], list[tuple[str, str]]]:
+    output_path = RAW_DIR / f"Season-{year}.csv"
+
     urls = []
     alias_list = []
     if (year < 1975) or (year > 2025):
         print("\033[31mERROR -- ENTER A VALID SEASON YEAR (1975-2025) --\033[0m")
         return urls, alias_list
     
-    df = pd.read_csv(rf"G:\Projects\NFL-Predictor\data\raw\Season-{year}.csv")
+    df = pd.read_csv(output_path)
     
     for row in df.itertuples(index=False):
         date_str = row.event_date.replace("-", "")
