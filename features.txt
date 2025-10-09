@@ -48,6 +48,7 @@ THINGS TO FIX:
 - rework flatten in scraper     --done
 - rework merge file             --done
 - add progress bar              --done
+- change filepath system        --done
 - implement graceful exit on    --
 stats scrape
 

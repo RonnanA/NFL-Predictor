@@ -1,9 +1,10 @@
 from playwright.sync_api import sync_playwright
-from teams import get_pfr_code, get_alias_from_tc
+from teams import get_pfr_code
+from reformater import flatten_game_stats
+from config import RAW_DIR
 from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn
 from bs4 import BeautifulSoup
 from datetime import datetime
-from config import RAW_DIR
 from io import StringIO
 import pandas as pd
 import time
@@ -32,7 +33,7 @@ def scrape_season(year: int) -> pd.DataFrame:
             return updated_df
             
     except:
-        print(f"-- SEASON {year} FILE IS UP-TO-DATE --")    
+        print(f"\033[32m-- SEASON {year} FILE IS UP-TO-DATE --\033[0m")    
         return None
 
 
@@ -77,6 +78,13 @@ def scrape_season_helper(year: int) -> pd.DataFrame:
 
 
 def scrape_stats(year: int):
+    stop_req = False
+    def handle_exit(sig, frame):
+        nonlocal stop_req
+        print("\033[33m-- STOP REQUEST, EXITING... --\033[0m")
+        stop_req = True
+    signal.signal(signal.SIGINT, handle_exit)
+    
     urls, alias_list = build_boxscore_urls(year)
     if len(urls) == 0:
         print("\033[31mERROR -- NO URLS GIVEN TO SCRAPE --\033[0m")
@@ -89,7 +97,7 @@ def scrape_stats(year: int):
     if os.path.exists(output_path):
         final_df = pd.read_csv(output_path)
         already_done = set(final_df["url"].to_list())
-        print(f"-- FOUND {len(already_done)} GAMES ALREADY SCRAPED --")
+        print(f"\033[33m-- FOUND {len(already_done)} GAMES ALREADY SCRAPED --")
     else:
         final_df = pd.DataFrame()
         already_done = set()
@@ -104,6 +112,12 @@ def scrape_stats(year: int):
         task = progress.add_task("[green]Scraping...", total=num_scrapes)
 
         for url, alias_tuple in zip(urls, alias_list):
+            if stop_req:
+                print("\033[32m-------------------------------------------------------\n" \
+                      " exit complete twin. re-run to continue where left off\n" \
+                      "-------------------------------------------------------\033[0m")
+                sys.exit(0)
+
             if url in already_done:
                 print(f"-- SKIPPING {url} (ALREADY SCRAPED) --")
                 progress.update(task, advance=1)
@@ -116,8 +130,13 @@ def scrape_stats(year: int):
                 print(f"-- SCRAPED {url} --")
             else:
                 print(f"\033[31m-- SKIPPED {url} (FAILED) --\033[0m")
-
             progress.update(task, advance=1)
+
+            if stop_req:
+                print("\033[32m-------------------------------------------------------\n" \
+                      " exit complete twin. re-run to continue where left off\n" \
+                      "-------------------------------------------------------\033[0m")
+                sys.exit(0)
             
             delay = random.uniform(min_delay, max_delay)
             print(f"\033[33m-- SLEEPING {delay:.1f}s... --\033[0m")
@@ -131,7 +150,7 @@ def scrape_stats(year: int):
 def scrape_stats_helper(url: str, season_home_team: str, season_away_team: str) -> pd.DataFrame:
     try:
         with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True)
+            browser = p.chromium.launch(headless=True, handle_sigint=False)
             page = browser.new_page()
             page.goto(url, timeout=60000)
             html = page.content()
@@ -153,57 +172,8 @@ def scrape_stats_helper(url: str, season_home_team: str, season_away_team: str) 
         return None
 
 
-def flatten_game_stats(df: pd.DataFrame, season_home_team: str, season_away_team: str) -> pd.DataFrame:
-    
-    stats_tm_alias = get_alias_from_tc(df.columns[1])
-    stats_opp_alias = get_alias_from_tc(df.columns[2])
-
-    if stats_tm_alias == season_home_team and stats_opp_alias == season_away_team:
-        df.columns = ['stat', season_home_team, season_away_team]
-        home_col, away_col = season_home_team, season_away_team
-    elif stats_tm_alias == season_away_team and stats_opp_alias == season_home_team:
-        df.columns = ['stat', season_away_team, season_home_team]
-        home_col, away_col = season_home_team, season_away_team
-    else:
-        print("\033[31mERROR -- SCRAPED ALIASES DO NOT MATCH SEASON FILE ALIASES --\033[0m")
-        return
-    
-    flat_data = {}
-
-    expanded_stats = {
-        "Rush-Yds-TDs": ["rush_att", "rush_yds", "rush_tds"],
-        "Cmp-Att-Yd-TD-INT": ["pass_cmp", "pass_att", "pass_yds", "pass_tds", "pass_int"],
-        "Sacked-Yards": ["sacks", "sack_yds"],
-        "Fumbles-Lost": ["fmbl", "fmbl_yds"],
-        "Penalties-Yards": ["pen", "pen_yds"],
-        "Third Down Conv.": ["third_d", "thrid_d_conv"],
-        "Fourth Down Conv.": ["fourth_d", "fourth_d_conv"]
-    }
-
-    for _, row in df.iterrows():
-        stat_name = row['stat']
-        home_value = str(row[home_col])
-        away_value = str(row[away_col])
-        
-        if stat_name in expanded_stats:
-            keys = expanded_stats[stat_name]
-            home_parts = home_value.split("-")
-            away_parts = away_value.split("-")
-            for k, home_part, away_part in zip(keys, home_parts, away_parts):
-                flat_data[f"home_{k}"] = home_part
-                flat_data[f"away_{k}"] = away_part
-        else:
-            flat_data[f"home_{stat_name.lower().replace(' ', '_')}"] = home_value
-            flat_data[f"away_{stat_name.lower().replace(' ', '_')}"] = away_value
-
-    flat_data["home_alias"] = season_home_team
-    flat_data["away_alias"] = season_away_team
-
-    return(pd.DataFrame([flat_data]))
-
-
 def build_boxscore_urls(year: int) -> tuple[list[str], list[tuple[str, str]]]:
-    output_path = RAW_DIR / f"Season-{year}.csv"
+    input_path = RAW_DIR / f"Season-{year}.csv"
 
     urls = []
     alias_list = []
@@ -211,11 +181,10 @@ def build_boxscore_urls(year: int) -> tuple[list[str], list[tuple[str, str]]]:
         print("\033[31mERROR -- ENTER A VALID SEASON YEAR (1975-2025) --\033[0m")
         return urls, alias_list
     
-    df = pd.read_csv(output_path)
+    df = pd.read_csv(input_path)
     
     for row in df.itertuples(index=False):
         date_str = row.event_date.replace("-", "")
-        #home_alias = row.tm_alias if row.tm_location == "H" else row.opp_alias
         home_code = get_pfr_code(row.home_team)
         alias_list.append((row.home_team, row.away_team))
 
