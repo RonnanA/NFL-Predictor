@@ -46,7 +46,7 @@ def scrape_season_helper(year: int) -> pd.DataFrame:
             page = browser.new_page()
 
             try:
-                page.goto(url, timeout=60000)
+                page.goto(url, timeout=120000)
                 html = page.content()
             except Exception as e:
                 print(f"\033[31mERROR -- FAILED TO LOAD PAGE FOR {year}: {e} --\033[0m")
@@ -129,6 +129,8 @@ def scrape_stats(year: int):
                 final_df.to_csv(output_path, index=False)
                 print(f"-- SCRAPED {url} --")
             else:
+                empty_row = pd.DataFrame([{col: (url if col == "url" else pd.NA) for col in final_df.columns}])
+                final_df= pd.concat([final_df, empty_row], ignore_index=True)
                 print(f"\033[31m-- SKIPPED {url} (FAILED) --\033[0m")
             progress.update(task, advance=1)
 
@@ -152,7 +154,7 @@ def scrape_stats_helper(url: str, season_home_team: str, season_away_team: str) 
         with sync_playwright() as p:
             browser = p.chromium.launch(headless=True, handle_sigint=False)
             page = browser.new_page()
-            page.goto(url, timeout=60000)
+            page.goto(url, timeout=120000)
             html = page.content()
             browser.close()
 

@@ -4,7 +4,7 @@ import pandas as pd
 
 def merge(year: int):
     input_path_season = RAW_DIR / f"Season-{year}.csv"
-    input_path_stats = RAW_DIR / f"SStats-{year}.csv"
+    input_path_stats = RAW_DIR / f"Stats-{year}.csv"
     output_path = PROCESSED_DIR / f"nfl-{year}.csv"
     
     season_df = pd.read_csv(input_path_season)
