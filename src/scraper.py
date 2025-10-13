@@ -54,7 +54,8 @@ def scrape_season_helper(year: int) -> pd.DataFrame:
             page = browser.new_page()
 
             try:
-                page.goto(url, timeout=120000)
+                page.goto(url, timeout=120000, wait_until="domcontentloaded")
+                page.wait_for_selector("table#games tbody tr", timeout=120000)
                 html = page.content()
             except Exception as e:
                 print(f"\033[31mERROR -- FAILED TO LOAD PAGE FOR {year}: {e} --\033[0m")
@@ -202,14 +203,15 @@ def build_boxscore_urls(year: int) -> tuple[list[str], list[tuple[str, str]]]:
         print("\033[31mERROR -- ENTER A VALID SEASON YEAR (1975-2025) --\033[0m")
         return urls, alias_list
     
-    df = pd.read_csv(input_path)
+    df = pd.read_csv(input_path) #TODO change build boxscore urls to scrape only games played from season file not iterate through entire file. 
     
     for row in df.itertuples(index=False):
-        date_str = row.event_date.replace("-", "")
-        home_code = get_pfr_code(row.home_team)
-        alias_list.append((row.home_team, row.away_team))
+        if (not pd.isna(row.home_score)) and (not pd.isna(row.away_score)):
+            date_str = row.event_date.replace("-", "")
+            home_code = get_pfr_code(row.home_team)
+            alias_list.append((row.home_team, row.away_team))
 
-        url = f"https://www.pro-football-reference.com/boxscores/{date_str}0{home_code}.htm"
-        urls.append(url)
+            url = f"https://www.pro-football-reference.com/boxscores/{date_str}0{home_code}.htm"
+            urls.append(url)
 
     return urls, alias_list
