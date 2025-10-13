@@ -52,3 +52,13 @@ THINGS TO FIX:
 - implement graceful exit on    --done
 stats scrape
 
+model train/test eval
+- train on 2020-2023
+- test on 2024
+- evaluate/improve model
+- save model
+
+model live learning
+- load model
+- train on master csv
+- make predictions on future matchups
