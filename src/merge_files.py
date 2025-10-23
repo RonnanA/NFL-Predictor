@@ -18,3 +18,10 @@ def merge(year: int):
     print("\033[32m-----------------------\n" \
           " merge successful twin\n" \
           "-----------------------\033[0m")
+    
+
+def get_master_df():
+    years = [2020, 2021, 2022, 2023, 2024]
+    df = pd.concat((pd.read_csv(PROCESSED_DIR / f"nfl-{year}.csv") for year in years), ignore_index=True)
+    
+    df.to_csv("test.csv", index=False)

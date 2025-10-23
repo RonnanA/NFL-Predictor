@@ -1,1 +1,0 @@
-#df["home_team_win"] = (df["home_score"] > df["away_score"]).astype(int)
