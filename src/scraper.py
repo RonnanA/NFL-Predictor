@@ -1,3 +1,9 @@
+import pandas as pd
+import time
+import os
+import signal
+import sys
+import random
 from playwright.sync_api import sync_playwright
 from teams import get_pfr_code
 from reformater import flatten_game_stats
@@ -6,12 +12,7 @@ from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn
 from bs4 import BeautifulSoup
 from datetime import datetime
 from io import StringIO
-import pandas as pd
-import time
-import os
-import signal
-import sys
-import random
+
 
 USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
@@ -83,6 +84,7 @@ def scrape_season_helper(year: int) -> pd.DataFrame:
     print("\033[32m-----------------------------------\n" \
           " season web scrape successful twin\n" \
           "-----------------------------------\033[0m")
+    
     return df
 
 

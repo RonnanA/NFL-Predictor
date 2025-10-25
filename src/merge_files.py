@@ -1,5 +1,6 @@
-from config import PROCESSED_DIR, RAW_DIR
 import pandas as pd
+from config import PROCESSED_DIR, RAW_DIR
+from features import data_cleanup
 
 
 def merge(year: int):
@@ -20,8 +21,15 @@ def merge(year: int):
           "-----------------------\033[0m")
     
 
-def get_master_df():
+def get_master_df() -> pd.DataFrame:
     years = [2020, 2021, 2022, 2023, 2024]
-    df = pd.concat((pd.read_csv(PROCESSED_DIR / f"nfl-{year}.csv") for year in years), ignore_index=True)
+
+    df_list = []
+    for year in years:
+        tmp = pd.read_csv(PROCESSED_DIR / f"nfl-{year}.csv")
+        clean = data_cleanup(tmp, year)
+        df_list.append(clean)
     
-    df.to_csv("test.csv", index=False)
+    df = pd.concat(df_list, ignore_index=True)
+    
+    return df
