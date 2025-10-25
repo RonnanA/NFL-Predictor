@@ -1,17 +1,7 @@
-X feature matrix metrics:
--- points_scored_diff (teamA_ppg - teamB_ppg)
--- points_allowed_diff
--- yards_gained_diff
--- yards_allowed_diff
--- turnover_diff
--- recent_form_diff
--- home_team (if teamA is at home)
-##-- elo_diff (if you calculate Elo or use a proxy like power ranking)## future feature
-
 X = features
 y = home team win
 
-model = logistic regression
+sk_model = RFC
 
 merged file metrics:
 home_first_downs,         away_first_downs,
@@ -40,7 +30,7 @@ home_time_of_possession,  away_time_of_possession,
 home_alias,               away_alias
 
 workflow -- scrape data -> merge data -> process data -> build X (features) and y (win/loss) -> train/test model -> weekly data updates/re-train (script)
-
+modelflow -- get master DF (all processed csv's) -> build features -> test train split -> train model, make predictions, save model
 
 THINGS TO FIX:
 (change perspective to home/away team)

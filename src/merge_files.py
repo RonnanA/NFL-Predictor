@@ -1,6 +1,6 @@
 import pandas as pd
 from config import PROCESSED_DIR, RAW_DIR
-from features import data_cleanup
+from features import data_cleanup, build_features
 
 
 def merge(year: int):
@@ -21,7 +21,7 @@ def merge(year: int):
           "-----------------------\033[0m")
     
 
-def get_master_df() -> pd.DataFrame:
+def get_master_df(based_on=3) -> pd.DataFrame:
     years = [2020, 2021, 2022, 2023, 2024]
 
     df_list = []
@@ -31,5 +31,6 @@ def get_master_df() -> pd.DataFrame:
         df_list.append(clean)
     
     df = pd.concat(df_list, ignore_index=True)
-    
-    return df
+    final = build_features(df, based_on)
+
+    return final

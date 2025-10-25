@@ -10,19 +10,18 @@ def data_cleanup(df: pd.DataFrame, season: int) -> pd.DataFrame:
     drop_cols = ["url", "week_day", "event_date", "game_time", "home_time_of_possession", "away_time_of_possession"]
     df = df.drop(columns=[c for c in drop_cols if c in df.columns], errors="ignore")
 
-    non_numeric = ["week", "home_team", "away_team"]
+    non_numeric = ["home_team", "away_team"]
     numeric_cols = [c for c in df.columns if c not in non_numeric]
     for col in numeric_cols:
         df[col] = pd.to_numeric(df[col], errors="coerce")
 
-    df["week"] = pd.to_numeric(df["week"], errors="coerce")
     df = df.dropna(subset=["week"]).sort_values("week").reset_index(drop=True)
 
     return df
 
 
-def build_features(df: pd.DataFrame, based=3) -> pd.DataFrame:
-    df = add_team_rolling_averages_helper(df, based=based)
+def build_features(df: pd.DataFrame, based_on) -> pd.DataFrame:
+    df = add_team_rolling_averages_helper(df, based_on)
 
     diff_stats = [
         "score", "first_downs", "rush_yds", "pass_yds",
@@ -40,7 +39,7 @@ def build_features(df: pd.DataFrame, based=3) -> pd.DataFrame:
     return df
 
 
-def add_team_rolling_averages_helper(df: pd.DataFrame, based=3) -> pd.DataFrame:
+def add_team_rolling_averages_helper(df: pd.DataFrame, based_on) -> pd.DataFrame:
     df = df.sort_values(["season", "week"]).copy()
 
     stats = [
@@ -52,13 +51,13 @@ def add_team_rolling_averages_helper(df: pd.DataFrame, based=3) -> pd.DataFrame:
         df[f"home_{stat}_avg"] = (
             df.groupby("home_team")[f"home_{stat}"]
             .shift(1)
-            .rolling(based)
+            .rolling(based_on)
             .mean()
         )
         df[f"away_{stat}_avg"] = (
             df.groupby("away_team")[f"away_{stat}"]
             .shift(1)
-            .rolling(based)
+            .rolling(based_on)
             .mean()
         )
 

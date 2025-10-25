@@ -1,9 +1,13 @@
 import pandas as pd
-from sklearn.ensemble import RandomForestClassifier #temp
-from sklearn.metrics import accuracy_score
+import joblib
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import accuracy_score, roc_auc_score
+from config import MODELS_DIR
 
 
-def get_sets(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.Series, pd.DataFrame, pd.Series, pd.DataFrame]:
+def test_train_split(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.Series, pd.DataFrame, pd.Series, pd.DataFrame]:
     train_df = df[df["season"] < 2024]
     test_df = df[df["season"] == 2024]
 
@@ -18,18 +22,33 @@ def get_sets(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.Series, pd.DataFrame, p
     return X_train, y_train, X_test, y_test, test_df
 
 
-def train__test_learn(X_train, y_train, X_test, y_test, test_df):
-    model = RandomForestClassifier(
-        n_estimators=200,
-        max_depth=None,
-        random_state=42
-    )
-    model.fit(X_train, y_train)
+def test_train_sklearn(X_train, y_train, X_test, y_test, test_df):
+    pipe = Pipeline([
+       ('scaler', StandardScaler()) ,
+       ('model', RandomForestClassifier(
+           n_estimators=200,
+           max_depth=None,
+           random_state=42,
+           n_jobs=1
+       ))
+    ])
 
-    y_pred = model.predict(X_test)
+    pipe.fit(X_train, y_train)
+
+    y_pred = pipe.predict(X_test)
+    probs = pipe.predict_proba(X_test)[:,1]
+
     acc = accuracy_score(y_test, y_pred)
-    #print(f"Model acc based on 2024 season test data: {acc:.2%}")
+    auc = roc_auc_score(y_test, probs)
 
-    probs = model.predict_proba(X_test)[:, 1]
-    test_df.loc[:, "home_win_prob"] = probs
-    print(test_df.head())
+    print(f"model accuracy: {acc:.2%}")
+    print(f"ROC AUC: {auc:.3f}")
+
+    test_df = test_df.copy()
+    test_df["home_win_prob"] = probs
+
+    output_path = MODELS_DIR / "nfl_rf_model.pkl"
+    joblib.dump(pipe, output_path)
+    print(f"model saved to {output_path}")
+
+    return pipe, test_df
