@@ -22,7 +22,7 @@ def test_train_split(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.Series, pd.Data
     return X_train, y_train, X_test, y_test, test_df
 
 
-def test_train_sklearn(X_train, y_train, X_test, y_test, test_df):
+def test_train_sklearn(X_train, y_train, X_test, y_test, test_df, mode="predict"):
     pipe = Pipeline([
        ('scaler', StandardScaler()) ,
        ('model', RandomForestClassifier(
@@ -33,22 +33,33 @@ def test_train_sklearn(X_train, y_train, X_test, y_test, test_df):
        ))
     ])
 
-    pipe.fit(X_train, y_train)
+    # Predict mode to train model on current data (DEFAULT)
+    if(mode == "predict"):
+        return
+    
 
-    y_pred = pipe.predict(X_test)
-    probs = pipe.predict_proba(X_test)[:,1]
+    # Evaluation mode to train and improve model
+    if(mode == "eval"):
+        pipe.fit(X_train, y_train)
 
-    acc = accuracy_score(y_test, y_pred)
-    auc = roc_auc_score(y_test, probs)
+        y_pred = pipe.predict(X_test)
+        probs = pipe.predict_proba(X_test)[:,1]
 
-    print(f"model accuracy: {acc:.2%}")
-    print(f"ROC AUC: {auc:.3f}")
+        acc = accuracy_score(y_test, y_pred)
+        auc = roc_auc_score(y_test, probs)
 
-    test_df = test_df.copy()
-    test_df["home_win_prob"] = probs
+        print(f"model accuracy: {acc:.2%}")
+        print(f"ROC AUC: {auc:.3f}")
 
-    output_path = MODELS_DIR / "nfl_rf_model.pkl"
-    joblib.dump(pipe, output_path)
-    print(f"model saved to {output_path}")
+        test_df = test_df.copy()
+        test_df["home_win_prob"] = probs
 
-    return pipe, test_df
+        output_path = MODELS_DIR / "nfl_rf_model.pkl"
+        joblib.dump(pipe, output_path)
+        print(f"model saved to {output_path}")
+
+        return pipe, test_df
+
+
+def predict(home_team, away_team, model):
+    False

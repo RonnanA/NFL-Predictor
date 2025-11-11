@@ -11,3 +11,5 @@ def update_data_script(year: int):
     print("\033[32m----------------------\n" \
           " script complete twin\n" \
           "----------------------\033[0m")
+    
+update_data_script(2025)
