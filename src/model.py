@@ -4,9 +4,9 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import accuracy_score, roc_auc_score
-from config import MODELS_DIR
+from config import TEST_DIR, PROCESSED_DIR
 
-
+#TODO add mode to get different test sets
 def test_train_split(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.Series, pd.DataFrame, pd.Series, pd.DataFrame]:
     train_df = df[df["season"] < 2024]
     test_df = df[df["season"] == 2024]
@@ -21,8 +21,8 @@ def test_train_split(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.Series, pd.Data
 
     return X_train, y_train, X_test, y_test, test_df
 
-
-def test_train_sklearn(X_train, y_train, X_test, y_test, test_df, mode="predict"):
+#TODO improve model
+def test_train_sklearn(X_train, y_train, X_test=None, y_test=None, test_df=None, mode="predict"):
     pipe = Pipeline([
        ('scaler', StandardScaler()) ,
        ('model', RandomForestClassifier(
@@ -35,11 +35,20 @@ def test_train_sklearn(X_train, y_train, X_test, y_test, test_df, mode="predict"
 
     # Predict mode to train model on current data (DEFAULT)
     if(mode == "predict"):
-        return
+        output_path = PROCESSED_DIR / "nfl_rf_model.pkl"
+
+        pipe.fit(X_train, y_train)
+        joblib.dump(pipe, output_path)
+        print(f"model trained on full dataset and saved to {output_path} twin")
+
+        return pipe
     
 
     # Evaluation mode to train and improve model
-    if(mode == "eval"):
+    elif(mode == "eval"):
+        output_path = TEST_DIR / "test_nfl_rf_model.pkl"
+        assert X_test is not None and y_test is not None, "X_test/y_test are required for eval mode"
+
         pipe.fit(X_train, y_train)
 
         y_pred = pipe.predict(X_test)
@@ -51,15 +60,13 @@ def test_train_sklearn(X_train, y_train, X_test, y_test, test_df, mode="predict"
         print(f"model accuracy: {acc:.2%}")
         print(f"ROC AUC: {auc:.3f}")
 
-        test_df = test_df.copy()
+        test_df = test_df.copy() if test_df is not None else pd.DataFrame()
         test_df["home_win_prob"] = probs
 
-        output_path = MODELS_DIR / "nfl_rf_model.pkl"
         joblib.dump(pipe, output_path)
-        print(f"model saved to {output_path}")
+        print(f"test model saved to {output_path} twin")
 
         return pipe, test_df
 
-
-def predict(home_team, away_team, model):
-    False
+    else:
+        raise ValueError("Invalid mode. Use 'predict' or 'eval'.")
