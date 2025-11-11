@@ -13,7 +13,8 @@ def setup_script(mode="predict", update_data=False, update_model=False):
         scrape_stats(YEAR)
         merge(YEAR)
     
-    master_df = get_master_df()
+    years = [2020, 2021, 2022, 2023, 2024, 2025]
+    master_df = get_master_df(years)
 
     X_train, y_train, X_test, y_test, test_df = test_train_split(master_df)
 

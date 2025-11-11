@@ -21,9 +21,7 @@ def merge(year: int):
           "-----------------------\033[0m")
     
 
-def get_master_df(based_on=3) -> pd.DataFrame:
-    years = [2020, 2021, 2022, 2023, 2024]
-
+def get_master_df(years: list, based_on=3) -> pd.DataFrame:
     df_list = []
     for year in years:
         tmp = pd.read_csv(PROCESSED_DIR / f"nfl-{year}.csv")

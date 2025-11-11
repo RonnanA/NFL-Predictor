@@ -16,6 +16,7 @@ def data_cleanup(df: pd.DataFrame, season: int) -> pd.DataFrame:
         df[col] = pd.to_numeric(df[col], errors="coerce")
 
     df = df.dropna(subset=["week"]).sort_values("week").reset_index(drop=True)
+    df = df.dropna(subset=["home_score", "away_score"], how="any").reset_index(drop=True)
 
     return df
 
