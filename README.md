@@ -6,6 +6,7 @@ It scrapes, cleans, and analyzes historical game data, then trains a predictive 
 ## Project Overview
 This project aims to answer the question:
 > *Given two NFL teams what are the chances the home team wins?*
+
 It uses a combination of:
 - Web Scraping (automated data collection from Pro Football Reference)
 - Data processing and feature engineering
@@ -48,6 +49,6 @@ Example output:
 - Learn and apply effective feature engineering techniques
 - Demonstrate an end-to-end ML workflow on real sports data
 - Produce a model that updates automatically as new games are played
-<br><br><br>
+<br><br>
 
 ## --README Will Be Updated As Project Progresses--
