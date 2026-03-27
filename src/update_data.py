@@ -1,7 +1,7 @@
 import pandas as pd
 from pathlib import Path
 
-from config import YEAR, PRODUCTION_DIR, TEST_DIR
+from config import YEAR, PRODUCTION_DIR, TEST_DIR, RAW_DIR
 from scraper import scrape_season, scrape_stats
 from reformater import reformat_season
 from merge_files import merge, get_master_df
@@ -14,10 +14,27 @@ from model import rolling_cross_validate, train_final, load_model
 # ─────────────────────────────────────────────
 
 def refresh_data():
+    print("scraping season...", flush=True)
     df = scrape_season(YEAR)
-    reformat_season(df, YEAR)
+    
+    if df is not None and not df.empty:
+        print("reformatting season...", flush=True)
+        reformat_season(df, YEAR)
+    else:
+        print(f"season file already up to date or scrape failed, skipping reformat", flush=True)
+
+    season_path = RAW_DIR / f"Season-{YEAR}.csv"
+    if not season_path.exists():
+        print(f"season file missing for {YEAR} — skipping stats scrape. retry scraping manually.", flush=True)
+        return
+
+    print("scraping stats...", flush=True)
     scrape_stats(YEAR)
+
+    print("merging files...", flush=True)
     merge(YEAR)
+
+    print("data refresh complete", flush=True)
 
 
 def load_master(years: list[int] | None = None) -> tuple:

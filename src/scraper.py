@@ -13,6 +13,7 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 from io import StringIO
 
+AUTH_PATH = RAW_DIR / "pfr_auth.json"
 
 USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
@@ -24,6 +25,7 @@ USER_AGENTS = [
 ]
 
 def scrape_season(year: int) -> pd.DataFrame:
+    print("in scrape season")
     output_path = RAW_DIR / f"Season-{year}.csv"
     if not os.path.exists(output_path):
         df = scrape_season_helper(year)
@@ -47,6 +49,7 @@ def scrape_season(year: int) -> pd.DataFrame:
 
 
 def scrape_season_helper(year: int) -> pd.DataFrame:
+    print("in scrape season helper")
     url = f"https://www.pro-football-reference.com/years/{year}/games.htm"
 
     try:
@@ -55,6 +58,7 @@ def scrape_season_helper(year: int) -> pd.DataFrame:
             page = browser.new_page()
 
             try:
+                print("before goto")
                 page.goto(url, timeout=120000, wait_until="domcontentloaded")
                 page.wait_for_selector("table#games tbody tr", timeout=120000)
                 html = page.content()
@@ -89,6 +93,7 @@ def scrape_season_helper(year: int) -> pd.DataFrame:
 
 
 def scrape_stats(year: int):
+    print("in scrape stats")
     stop_req = False
     def handle_exit(sig, frame):
         nonlocal stop_req
@@ -173,6 +178,7 @@ def scrape_stats(year: int):
 
 
 def scrape_stats_helper(url: str, season_home_team: str, season_away_team: str, context) -> pd.DataFrame:
+    print("in scrape stats helper")
     try:
         page = context.new_page()
         page.goto(url, timeout=120000, wait_until="domcontentloaded")
