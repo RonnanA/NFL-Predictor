@@ -1,6 +1,5 @@
 import pandas as pd
 from config import PROCESSED_DIR, RAW_DIR
-from features import data_cleanup, build_features
 
 
 def merge(year: int):
@@ -21,14 +20,9 @@ def merge(year: int):
           "-----------------------\033[0m")
     
 
-def get_master_df(years: list, based_on=3) -> pd.DataFrame:
-    df_list = []
-    for year in years:
-        tmp = pd.read_csv(PROCESSED_DIR / f"nfl-{year}.csv")
-        clean = data_cleanup(tmp, year)
-        df_list.append(clean)
-    
-    df = pd.concat(df_list, ignore_index=True)
-    final = build_features(df, based_on)
-
-    return final
+def get_master_df(year: int) -> pd.DataFrame:
+    path = PROCESSED_DIR / f"nfl-{year}.csv"
+    if not path.exists():
+        print(f"warning: no data file found for {year}, skipping")
+        return pd.DataFrame()
+    return pd.read_csv(path)

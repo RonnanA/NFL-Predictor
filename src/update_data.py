@@ -1,10 +1,17 @@
-import joblib
+import pandas as pd
+from pathlib import Path
+
 from config import YEAR, PRODUCTION_DIR, TEST_DIR
 from scraper import scrape_season, scrape_stats
 from reformater import reformat_season
 from merge_files import merge, get_master_df
-from model import test_train_split, test_train_sklearn
+from features import data_cleanup, build_team_snapshots, build_matchup_frame
+from model import rolling_cross_validate, train_final, load_model
 
+
+# ─────────────────────────────────────────────
+# Data
+# ─────────────────────────────────────────────
 
 def refresh_data():
     df = scrape_season(YEAR)
@@ -12,47 +19,71 @@ def refresh_data():
     scrape_stats(YEAR)
     merge(YEAR)
 
-def load_master(years=None):
+
+def load_master(years: list[int] | None = None) -> tuple:
     if years is None:
-        years = [2020, 2021, 2022, 2023, 2024]
-    return get_master_df(years)
+        years = [2020, 2021, 2022, 2023, 2024, 2025]
 
-def get_or_train_model(master_df, *, model_path, evaluate=False):
-    X_train, y_train, X_test, y_test, test_df = test_train_split(master_df)
+    season_dfs = []
+    for year in years:
+        raw = get_master_df(year)
+        if raw is None or raw.empty:
+            continue
+        cleaned = data_cleanup(raw, season=year)
+        season_dfs.append(cleaned)
 
-    if model_path.exists():
-        pipe = joblib.load(model_path)
-    else:
-        pipe = test_train_sklearn(X_train, y_train, X_test, y_test)
-        joblib.dump(pipe, model_path)
+    if not season_dfs:
+        raise RuntimeError("no season data loaded — check your processed CSV files")
 
-    if evaluate:
-        return pipe, test_df
+    all_games = pd.concat(season_dfs).sort_values(["season", "week"]).reset_index(drop=True)
 
-    return pipe
+    snapshots_df = build_team_snapshots(all_games)
+    matchup_df   = build_matchup_frame(all_games, snapshots_df)
 
-# Prediction script
-def setup_for_predict(update_data=False, update_model=False):
+    return snapshots_df, matchup_df
+
+
+# ─────────────────────────────────────────────
+# Model
+# ─────────────────────────────────────────────
+
+def get_or_train_model(matchup_df, *, model_path: Path, force_retrain: bool = False) -> object:
+    if model_path.exists() and not force_retrain:
+        print(f"loading model from {model_path}")
+        return load_model(model_path)
+
+    print("training new model...")
+    return train_final(matchup_df, save_path=model_path)
+
+
+# ─────────────────────────────────────────────
+# Entry points
+# ─────────────────────────────────────────────
+
+def setup_for_predict(update_data: bool = False, update_model: bool = False) -> tuple:
     if update_data:
         refresh_data()
 
-    model_path = PRODUCTION_DIR / "nfl_rf_model.pkl"
-    if update_model:
-        model_path.unlink(missing_ok=True)  # force retrain
+    snapshots_df, matchup_df = load_master()
+    pipe = get_or_train_model(
+        matchup_df,
+        model_path=PRODUCTION_DIR / "nfl_rf_model.pkl",
+        force_retrain=update_model,
+    )
+    return pipe, snapshots_df
 
-    master_df = load_master()
-    pipe = get_or_train_model(master_df, model_path=model_path)
-    return pipe, master_df
 
-# Evaluation script
-def setup_for_eval(update_data=False, update_model=False):
+def setup_for_eval(update_data: bool = False, update_model: bool = False) -> tuple:
     if update_data:
         refresh_data()
 
-    model_path = TEST_DIR / "test_nfl_rf_model.pkl"
-    if update_model:
-        model_path.unlink(missing_ok=True)
+    snapshots_df, matchup_df = load_master()
 
-    master_df = load_master()
-    pipe, test_df = get_or_train_model(master_df, model_path=model_path, evaluate=True)
-    return pipe, master_df, test_df
+    cv_results = rolling_cross_validate(matchup_df)
+
+    pipe = get_or_train_model(
+        matchup_df,
+        model_path=TEST_DIR / "test_nfl_rf_model.pkl",
+        force_retrain=update_model,
+    )
+    return pipe, snapshots_df, cv_results
