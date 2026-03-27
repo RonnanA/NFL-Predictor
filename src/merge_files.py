@@ -1,5 +1,5 @@
-from config import PROCESSED_DIR, RAW_DIR
 import pandas as pd
+from config import PROCESSED_DIR, RAW_DIR
 
 
 def merge(year: int):
@@ -18,3 +18,11 @@ def merge(year: int):
     print("\033[32m-----------------------\n" \
           " merge successful twin\n" \
           "-----------------------\033[0m")
+    
+
+def get_master_df(year: int) -> pd.DataFrame:
+    path = PROCESSED_DIR / f"nfl-{year}.csv"
+    if not path.exists():
+        print(f"warning: no data file found for {year}, skipping")
+        return pd.DataFrame()
+    return pd.read_csv(path)

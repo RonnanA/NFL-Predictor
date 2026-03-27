@@ -50,7 +50,6 @@ def reformat_season(df: pd.DataFrame, year: int):
             "-------------------------------------------------------------------------------------\033[0m")
 
 def flatten_game_stats(df: pd.DataFrame, season_home_team: str, season_away_team: str) -> pd.DataFrame:
-    
     stats_tm_alias = get_alias_from_tc(df.columns[1])
     stats_opp_alias = get_alias_from_tc(df.columns[2])
 
