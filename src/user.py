@@ -1,4 +1,3 @@
-import pandas as pd
 from thefuzz import process
 from teams import TEAM_NAME_TO_ALIAS, get_alias
 

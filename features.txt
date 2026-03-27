@@ -52,3 +52,5 @@ model live learning
 - load model
 - train on master csv
 - make predictions on future matchups
+
+features model predict

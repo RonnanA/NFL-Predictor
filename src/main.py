@@ -1,8 +1,10 @@
-from update_data import setup_script
+from update_data import setup_for_predict, setup_for_eval
 from user import get_user_input
 from predict import make_prediction
 
-pipe, master_df = setup_script("eval")
+pipe, master_df = setup_for_predict() # args(update_data, update_model)
+#pipe, master_df, test_df = setup_for_eval()
+
 
 while True:
     print("\nenter q to quit")

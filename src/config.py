@@ -13,4 +13,4 @@ RAW_DIR = PROJECT_ROOT / DATA_DIR / "raw"
 PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
 RAW_DIR.mkdir(parents=True, exist_ok=True)
 
-YEAR = 2025
+YEAR = 2024
